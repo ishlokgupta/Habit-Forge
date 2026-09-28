@@ -24,7 +24,6 @@ habit-forge/
 |-- storage.py
 |-- data.json
 |-- README.md
-|-- requirements.txt
 `-- .gitignore
 ```
 
