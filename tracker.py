@@ -3,74 +3,51 @@ from storage import load_data, save_data
 
 
 class HabitTracker:
-    """Handles habit actions such as add, list, complete, and delete."""
-
     def __init__(self):
         self.habits = self._load_habits()
 
     def add_habit(self, name, frequency):
-        """Create a new habit and save it."""
-        habit_id = self._get_next_id()
-        habit = Habit(habit_id, name, frequency)
+        next_id = max([h.id for h in self.habits], default=0) + 1
+        habit = Habit(next_id, name, frequency)
         self.habits.append(habit)
         self.save()
         return habit
 
     def get_all_habits(self):
-        """Return all habits."""
         return self.habits
 
-    def complete_habit(self, habit_id):
-        """Mark a habit as completed today."""
-        habit = self.find_habit_by_id(habit_id)
+    def get_habit(self, habit_id):
+        for h in self.habits:
+            if h.id == habit_id:
+                return h
+        return None
 
-        if habit is None:
+    def complete_habit(self, habit_id):
+        habit = self.get_habit(habit_id)
+        if not habit:
             return None
 
-        was_updated = habit.mark_complete()
+        res = habit.mark_complete()
         self.save()
-        return was_updated
+        return res
 
     def delete_habit(self, habit_id):
-        """Delete a habit by ID."""
-        habit = self.find_habit_by_id(habit_id)
-
-        if habit is None:
+        habit = self.get_habit(habit_id)
+        if not habit:
             return False
 
         self.habits.remove(habit)
         self.save()
         return True
 
-    def find_habit_by_id(self, habit_id):
-        """Find and return one habit by ID."""
-        for habit in self.habits:
-            if habit.id == habit_id:
-                return habit
-
-        return None
-
     def save(self):
-        """Save all habits to the JSON data file."""
-        habits_data = [habit.to_dict() for habit in self.habits]
-        save_data(habits_data)
+        save_data([h.to_dict() for h in self.habits])
 
     def _load_habits(self):
-        """Load saved habit dictionaries and convert them into Habit objects."""
         habits = []
-
-        for habit_data in load_data():
+        for item in load_data():
             try:
-                habits.append(Habit.from_dict(habit_data))
+                habits.append(Habit.from_dict(item))
             except (KeyError, TypeError):
-                # Skip badly formatted records instead of crashing the app.
-                continue
-
+                pass
         return habits
-
-    def _get_next_id(self):
-        """Return the next available habit ID."""
-        if not self.habits:
-            return 1
-
-        return max(habit.id for habit in self.habits) + 1
