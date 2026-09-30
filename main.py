@@ -6,9 +6,11 @@ def main():
     parser = argparse.ArgumentParser(description="Simple CLI Habit Tracker")
     subparsers = parser.add_subparsers(dest="command", required=True)
 
+    # Basic navigation commands
     subparsers.add_parser("add", help="Add habit")
     subparsers.add_parser("list", help="List habits")
 
+    # Commands that require a target habit ID
     complete_parser = subparsers.add_parser("complete", help="Mark habit complete")
     complete_parser.add_argument("habit_id", type=int)
 
@@ -19,6 +21,7 @@ def main():
     tracker = HabitTracker()
 
     if args.command == "add":
+        # Interactive prompts keep CLI flags simple
         name = input("Habit name: ").strip()
         if not name:
             print("Name cannot be empty.")
@@ -38,6 +41,7 @@ def main():
             print("No habits found. Add one with: python main.py add")
             return
 
+        # Simple terminal layout
         print("\nID   Name                 Freq     Done Today  Streak")
         print("-" * 52)
         for h in habits:
@@ -46,6 +50,7 @@ def main():
         print()
 
     elif args.command == "complete":
+        # Returns None if bad ID, True if newly marked, False if already completed today
         res = tracker.complete_habit(args.habit_id)
         if res is None:
             print(f"No habit found with ID {args.habit_id}.")
